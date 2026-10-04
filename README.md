@@ -1,7 +1,7 @@
 # Календарь звонков
 
-
 [![hexlet-check](https://github.com/alte0/ai-for-developers-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/alte0/ai-for-developers-project-386/actions)
+[![ci](https://github.com/alte0/ai-for-developers-project-386/actions/workflows/ci.yml/badge.svg)](https://github.com/alte0/ai-for-developers-project-386/actions)
 
 Разработайте совместно с ИИ сервис для бронирования календаря
 
@@ -10,7 +10,9 @@
 
 ## Стек
 
-- Разное
+- Backend: TypeScript, Express (`backend/`, порт 3000, `GET /api/health`)
+- Frontend: TypeScript, Vite + React, Tailwind, shadcn/ui (`frontend/`, порт 5173)
+- Инфраструктура: Docker, docker-compose
 
 ## Установка
 
@@ -19,7 +21,11 @@
 ```bash
 git clone https://github.com/alte0/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
+docker compose up --build
 ```
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000/api/health → `{"status":"ok"}`
 
 ## Использование
 
