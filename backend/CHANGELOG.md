@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/alte0/ai-for-developers-project-386/compare/backend-v0.1.1...backend-v0.1.2) (2026-10-04)
+
+
+### Bug Fixes
+
+* ignore generated changelogs in prettier check ([e89c369](https://github.com/alte0/ai-for-developers-project-386/commit/e89c369ba4b670d6de4bd942290aea76c3a12eb5))
+
 ## [0.1.1](https://github.com/alte0/ai-for-developers-project-386/compare/backend-v0.1.0...backend-v0.1.1) (2026-10-04)
 
 
