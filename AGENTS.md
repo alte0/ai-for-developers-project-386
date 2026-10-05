@@ -32,3 +32,17 @@
   - `feat(backend)!: change health response shape`
   - `chore: update ci node version`
 - Mechanics: release-please (manifest mode, `backend` + `frontend` in `release-please-config.json`, versions in `.release-please-manifest.json`) reads history of `main`; release workflow runs only on push to `main`. Don't edit release tags/CHANGELOGs by hand.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five canonical labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout. See `docs/agents/domain.md`.
