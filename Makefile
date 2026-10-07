@@ -13,7 +13,7 @@ help:
 	@echo "  build-api  Build backend image only"
 	@echo "  build-web  Build frontend image only"
 	@echo "  health     Check backend (/api/health) and frontend (/)"
-	@echo "  test       Run backend smoke tests (vitest)"
+	@echo "  test       Run backend and frontend tests (vitest)"
 	@echo "  lint       Run ESLint in backend and frontend"
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
 	@echo "  format-check  Check Prettier formatting"
@@ -50,6 +50,7 @@ health:
 
 test:
 	npm --prefix backend test
+	npm --prefix frontend test
 
 lint:
 	npm --prefix backend run lint

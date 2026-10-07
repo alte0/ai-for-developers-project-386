@@ -7,7 +7,7 @@
 
 ## Verification
 - Full local mirror of CI: `make ci` (= `lint` + `format-check` + `test` + `build`).
-- Single checks: `make lint`, `make format-check`, `make test` (backend Vitest only), `make build` (npm builds, no Docker).
+- Single checks: `make lint`, `make format-check`, `make test` (backend + frontend Vitest), `make build` (npm builds, no Docker).
 - Docker: `make up` / `make health` (`:3000/api/health` → `{"status":"ok"}`, `:5173/` → 200). `build-api`/`build-web` build images only.
 - CI (`.github/workflows/ci.yml`, Node 24) runs the same on every push/PR, plus `docker compose build`. Don't touch `hexlet-check.yml`.
 
