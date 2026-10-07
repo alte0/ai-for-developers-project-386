@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/alte0/ai-for-developers-project-386/compare/frontend-v1.0.1...frontend-v1.1.0) (2026-10-07)
+
+
+### Features
+
+* **frontend:** add landing page with booking route ([4390857](https://github.com/alte0/ai-for-developers-project-386/commit/4390857c264a1b31c6bd9c90daf7ad06fad54776))
+
 ## [1.0.1](https://github.com/alte0/ai-for-developers-project-386/compare/frontend-v1.0.0...frontend-v1.0.1) (2026-10-04)
 
 
