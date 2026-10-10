@@ -13,7 +13,7 @@ export type VariantKey = (typeof VARIANTS)[number]['key']
 export function useVariant(): VariantKey {
   const [params] = useSearchParams()
   const raw = params.get('variant')?.toUpperCase()
-  return (VARIANTS.find((v) => v.key === raw)?.key ?? 'A') satisfies VariantKey
+  return (VARIANTS.find((v) => v.key === raw)?.key ?? 'B') satisfies VariantKey
 }
 
 export function PrototypeSwitcher() {
