@@ -8,7 +8,8 @@ import {
   slotDayLong,
   slotsForType,
   slotTimeRange,
-  POISONED_SLOT_IDS,
+  RACE_SLOT_IDS,
+  TAKEN_SLOT_IDS,
   type BookingResult,
   type EventType,
   type Slot,
@@ -118,8 +119,11 @@ export default function VariantA() {
                   >
                     <span className="font-medium">{slotDayLabel(s)}</span>
                     <span className="text-muted-foreground"> · {slotTimeRange(s)} UTC</span>
-                    {POISONED_SLOT_IDS.has(s.id) && (
+                    {TAKEN_SLOT_IDS.has(s.id) && (
                       <span className="ml-2 text-xs text-amber-600">(занят)</span>
+                    )}
+                    {RACE_SLOT_IDS.has(s.id) && (
+                      <span className="ml-2 text-xs text-amber-600">(может заняться)</span>
                     )}
                   </button>
                 </li>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,13 +8,14 @@ import {
   slotDayLong,
   slotsForType,
   slotTimeRange,
-  POISONED_SLOT_IDS,
+  TAKEN_SLOT_IDS,
   type BookingResult,
   type EventType,
   type Slot,
 } from './data'
 
-// Вариант B: всё на одной странице — три колонки (тип → слот → форма), состояние видно целиком.
+// Вариант B (выбран): всё на одной странице — три колонки (тип → слот → форма).
+// Правки из фидбека: слоты сгруппированы по датам; занятые — disabled.
 export default function VariantB() {
   const [eventType, setEventType] = useState<EventType | null>(null)
   const [slot, setSlot] = useState<Slot | null>(null)
@@ -24,6 +25,17 @@ export default function VariantB() {
   const [result, setResult] = useState<BookingResult | null>(null)
 
   const freeSlots = eventType ? slotsForType(eventType.id) : []
+
+  const groupedSlots = useMemo(() => {
+    const groups = new Map<string, Slot[]>()
+    for (const s of freeSlots) {
+      const key = s.start.slice(0, 10)
+      const list = groups.get(key) ?? []
+      list.push(s)
+      groups.set(key, list)
+    }
+    return [...groups.entries()]
+  }, [freeSlots])
 
   function book() {
     if (!slot) return
@@ -76,25 +88,38 @@ export default function VariantB() {
             </p>
           )}
           {eventType &&
-            freeSlots.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className={
-                  'rounded-lg border p-2 text-left text-sm ' +
-                  (slot?.id === s.id ? 'border-primary bg-primary/10' : 'hover:bg-muted')
-                }
-                onClick={() => {
-                  setSlot(s)
-                  setResult(null)
-                }}
-              >
-                <span className="font-medium">{slotDayLabel(s)}</span>
-                <span className="text-muted-foreground"> · {slotTimeRange(s)}</span>
-                {POISONED_SLOT_IDS.has(s.id) && (
-                  <span className="ml-1 text-xs text-amber-600">(занят)</span>
-                )}
-              </button>
+            groupedSlots.map(([day, daySlots]) => (
+              <div key={day} className="flex flex-col gap-1">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                  {slotDayLabel(daySlots[0])}
+                </h3>
+                {daySlots.map((s) => {
+                  const taken = TAKEN_SLOT_IDS.has(s.id)
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      disabled={taken}
+                      className={
+                        'rounded-lg border p-2 text-left text-sm ' +
+                        (taken
+                          ? 'cursor-not-allowed border-dashed bg-muted/50 text-muted-foreground opacity-60'
+                          : slot?.id === s.id
+                            ? 'border-primary bg-primary/10'
+                            : 'hover:bg-muted')
+                      }
+                      onClick={() => {
+                        if (taken) return
+                        setSlot(s)
+                        setResult(null)
+                      }}
+                    >
+                      <span className="font-medium">{slotTimeRange(s)}</span>
+                      {taken && <span className="ml-2 text-xs">занят</span>}
+                    </button>
+                  )
+                })}
+              </div>
             ))}
         </section>
 

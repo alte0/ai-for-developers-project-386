@@ -53,7 +53,7 @@ function iso(d: Date): string {
 
 function buildSlots(): Slot[] {
   const slots: Slot[] = []
-  // По одному «ядовитому» слоту на каждый тип — всегда отвечает 409.
+  // «Ядовитые» слоты: часть заняты (TAKEN), часть — гонка при submit (RACE).
   const poison = new Set(['consult-1d-10', 'code-review-2d-15', 'deep-dive-3d-11'])
   for (let day = 1; day <= 5; day++) {
     const base = startOfUtcDay(day)
@@ -81,7 +81,10 @@ function buildSlots(): Slot[] {
 }
 
 export const ALL_SLOTS: Slot[] = buildSlots()
-export const POISONED_SLOT_IDS = new Set(['consult-1d-10', 'code-review-2d-15', 'deep-dive-3d-11'])
+/** Слоты, уже занятые чужой записью: видны, но не selectable. */
+export const TAKEN_SLOT_IDS = new Set(['consult-1d-10', 'code-review-2d-15', 'deep-dive-3d-11'])
+/** «Гонка»: слот выглядит свободным, но на submit прилетает 409. */
+export const RACE_SLOT_IDS = new Set(['consult-3d-15', 'code-review-4d-13', 'deep-dive-2d-14'])
 
 export type BookingResult =
   | { ok: true; confirmation: string; slot: Slot; name: string; email: string; note: string }
@@ -91,7 +94,7 @@ export function createBooking(
   slot: Slot,
   fields: { name: string; email: string; note: string },
 ): BookingResult {
-  if (POISONED_SLOT_IDS.has(slot.id)) {
+  if (RACE_SLOT_IDS.has(slot.id)) {
     return {
       ok: false,
       status: 409,

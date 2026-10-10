@@ -6,7 +6,7 @@ import {
   EVENT_TYPES,
   slotsForType,
   slotTimeRange,
-  POISONED_SLOT_IDS,
+  RACE_SLOT_IDS,
   type BookingResult,
   type EventType,
   type Slot,
@@ -118,7 +118,7 @@ export default function VariantC() {
                       (slot?.id === s.id
                         ? 'border-primary bg-primary text-primary-foreground'
                         : 'hover:bg-muted') +
-                      (POISONED_SLOT_IDS.has(s.id) ? ' border-amber-400' : '')
+                      (RACE_SLOT_IDS.has(s.id) ? ' border-amber-400' : '')
                     }
                     onClick={() => {
                       setSlot(s)
