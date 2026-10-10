@@ -113,7 +113,7 @@ const fmtTime = new Intl.DateTimeFormat('ru-RU', {
 const fmtDate = new Intl.DateTimeFormat('ru-RU', {
   weekday: 'short',
   day: 'numeric',
-  month: 'short',
+  month: 'long',
   timeZone: 'UTC',
 })
 const fmtDateLong = new Intl.DateTimeFormat('ru-RU', {
