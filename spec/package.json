@@ -3,6 +3,10 @@
   "private": true,
   "scripts": {
     "build": "tsp compile .",
+    "gen": "tsp compile . && node scripts/patch-client-package.mjs && node scripts/generate-server-artifacts.mjs && npm --prefix client ci --no-audit --no-fund && npm --prefix client run build",
+    "gen:openapi": "tsp compile . --emit @typespec/openapi3",
+    "gen:sdk": "tsp compile . --emit @typespec/http-client-js && node scripts/patch-client-package.mjs && npm --prefix client ci --no-audit --no-fund && npm --prefix client run build",
+    "gen:server": "node scripts/generate-server-artifacts.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

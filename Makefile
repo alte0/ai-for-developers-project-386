@@ -18,7 +18,7 @@ help:
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
 	@echo "  format-check  Check Prettier formatting"
 	@echo "  build      Build backend and frontend (npm, no Docker)"
-	@echo "  openapi    Compile TypeSpec: docs/openapi.yaml + SDK in spec/client + backend artifacts"
+	@echo "  openapi    Compile TypeSpec: docs/openapi.yaml + SDK in spec/client + backend artifacts (npm --prefix spec run gen)"
 	@echo "  openapi-check  Regenerate contract artifacts and fail if git drifts"
 	@echo "  ci         Run openapi + lint + format-check + test + build + openapi-check (mirror of CI)"
 
@@ -72,11 +72,7 @@ build:
 	npm --prefix frontend run build
 
 openapi:
-	npm --prefix spec run build
-	node spec/scripts/patch-client-package.mjs
-	node spec/scripts/generate-server-artifacts.mjs
-	npm --prefix spec/client ci --no-audit --no-fund
-	npm --prefix spec/client run build
+	npm --prefix spec run gen
 
 openapi-check: openapi
 	@git ls-files --error-unmatch docs/openapi.yaml spec/client/src/index.ts \

@@ -42,9 +42,11 @@ docker compose up --build
 
 ```bash
 npm --prefix spec install       # однократно
-make openapi                    # spec/*.tsp → openapi.yaml + SDK + серверные артефакты backend
+make openapi                    # вся цепочка одной командой: spec/*.tsp → openapi.yaml + SDK + серверные артефакты backend
 make openapi-check              # перегенерация + проверка, что git не разошёлся
 ```
+
+Та же цепочка объявлена npm-скриптами в `spec/package.json` — пошагово её можно повторить через `npm --prefix spec run gen:openapi` (OpenAPI), `npm --prefix spec run gen:sdk` (SDK), `npm --prefix spec run gen:server` (серверные артефакты); `npm --prefix spec run gen` — зонтик, то же самое, что `make openapi`.
 
 После `make openapi` SDK нужно пересобрать в фронтенде — `npm --prefix frontend install` подхватит обновлённый `dist/` симлинком автоматически (сборка `dist/` уже входит в `make openapi`).
 

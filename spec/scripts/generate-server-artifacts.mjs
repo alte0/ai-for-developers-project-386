@@ -8,7 +8,8 @@
  * - `backend/src/routes/<tag>/<operation>.ts` — заготовки маршрутов, scaffold-once:
  *   файл создаётся, только если его ещё нет, и дальше правится руками.
  *
- * Запускается из `make openapi` после `tsp compile`. Руками артефакты из
+ * Запускается npm-скриптом `gen` (`npm --prefix spec run gen`, тот же путь
+ * идёт через `make openapi`) после `tsp compile`. Руками артефакты из
  * `backend/src/generated` не править; заготовки в `backend/src/routes/{guest,admin}`
  * — владение разработчика, генератор их не перезаписывает.
  */
