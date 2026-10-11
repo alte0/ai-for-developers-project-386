@@ -18,7 +18,7 @@ help:
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
 	@echo "  format-check  Check Prettier formatting"
 	@echo "  build      Build backend and frontend (npm, no Docker)"
-	@echo "  openapi    Compile TypeSpec: docs/openapi.yaml + SDK in spec/client"
+	@echo "  openapi    Compile TypeSpec: docs/openapi.yaml + SDK in spec/client + backend artifacts"
 	@echo "  openapi-check  Regenerate contract artifacts and fail if git drifts"
 	@echo "  ci         Run openapi + lint + format-check + test + build + openapi-check (mirror of CI)"
 
@@ -74,13 +74,16 @@ build:
 openapi:
 	npm --prefix spec run build
 	node spec/scripts/patch-client-package.mjs
+	node spec/scripts/generate-server-artifacts.mjs
 	npm --prefix spec/client ci --no-audit --no-fund
 	npm --prefix spec/client run build
 
 openapi-check: openapi
-	@git ls-files --error-unmatch docs/openapi.yaml spec/client/src/index.ts >/dev/null 2>&1 || \
-		(echo "контракт не отслеживается git: запусти 'make openapi' и закоммить docs/openapi.yaml + spec/client" && exit 1)
-	@git diff --exit-code -- docs/openapi.yaml spec/client/src spec/client/package.json spec/client/package-lock.json || \
+	@git ls-files --error-unmatch docs/openapi.yaml spec/client/src/index.ts \
+		backend/src/generated/contracts.gen.ts backend/src/routes/admin backend/src/routes/guest >/dev/null 2>&1 || \
+		(echo "контракт не отслеживается git: запусти 'make openapi' и закоммить артефакты" && exit 1)
+	@git diff --exit-code -- docs/openapi.yaml spec/client/src spec/client/package.json spec/client/package-lock.json \
+		backend/src/generated backend/src/routes/admin backend/src/routes/guest || \
 		(echo "контракт разошёлся с git: запусти 'make openapi' и закоммить результат" && exit 1)
 
 ci: openapi lint format-check test build openapi-check

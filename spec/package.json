@@ -13,6 +13,8 @@
     "@typespec/openapi": "^1.17.0",
     "@typespec/openapi3": "^1.17.0",
     "@typespec/rest": "^0.84.0",
-    "prettier": "^3.9.9"
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.9.9",
+    "yaml": "^2.9.1"
   }
 }

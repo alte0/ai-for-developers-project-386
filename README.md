@@ -34,14 +34,15 @@ docker compose up --build
 
 ## API-контракт
 
-Контракт описывается в TypeSpec (`spec/`), смысл — в `docs/spec.md` §3. Из исходников генерируются два артефакта (руками не правятся):
+Контракт описывается в TypeSpec (`spec/`), смысл — в `docs/spec.md` §3. Из исходников генерируются артефакты (руками не правятся):
 
 - `docs/openapi.yaml` — OpenAPI-документ;
-- `spec/client/` — TypeScript-SDK (`@booking/client`), фронтенд подключает его через `file:`-зависимость и вызывает через обёртку `frontend/src/api/client.ts`.
+- `spec/client/` — TypeScript-SDK (`@booking/client`), фронтенд подключает его через `file:`-зависимость и вызывает через обёртку `frontend/src/api/client.ts`;
+- `backend/src/generated/` — типы контракта, JSON Schemas для ajv и роутер заготовок; из них же `make openapi` создаёт (однократно) заготовки маршрутов `backend/src/routes/{guest,admin}/*.ts` — дальше их правит разработчик, генератор существующие файлы не перезаписывает.
 
 ```bash
 npm --prefix spec install       # однократно
-make openapi                    # spec/*.tsp → docs/openapi.yaml + SDK в spec/client
+make openapi                    # spec/*.tsp → openapi.yaml + SDK + серверные артефакты backend
 make openapi-check              # перегенерация + проверка, что git не разошёлся
 ```
 
