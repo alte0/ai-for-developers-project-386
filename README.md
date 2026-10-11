@@ -22,11 +22,15 @@
 ```bash
 git clone https://github.com/alte0/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
-docker compose up --build
+make up          # dev-режим (по умолчанию)
+# или:
+make up-prod     # prod-режим (nginx, статика + /api)
 ```
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000/api/health → `{"status":"ok"}`
+- Dev: frontend http://localhost:5173, backend http://localhost:3000/api/health → `{"status":"ok"}`
+- Prod: http://localhost:8080 — nginx раздаёт собранную статику и проксирует `/api` на backend (порт api наружу не публикуется); остановка — `make down-prod`
+
+Dev-стек заточен под разработку: исходники `frontend/` и `backend/src` смонтированы в контейнеры, правки подхватываются на лету (Vite HMR, `node --watch`) — пересборка (`make up`) нужна только после смены зависимостей или Dockerfile, а также после `make openapi` (контейнеру web нужен свежий образ SDK). Режимы независимы: dev и prod могут работать одновременно (разные порты).
 
 ## Использование
 

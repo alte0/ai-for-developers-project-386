@@ -1,0 +1,20 @@
+# Прод-стек: самодостаточный файл (не override), запуск через `make up-prod`.
+# Отдельное имя проекта — dev- и prod-стеки могут работать одновременно.
+name: ai-for-developers-project-386-prod
+
+services:
+  api:
+    build:
+      context: ./backend
+      target: run
+    env_file:
+      - ./backend/.env.example
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: run
+    ports:
+      - '8080:80'
+    depends_on:
+      - api

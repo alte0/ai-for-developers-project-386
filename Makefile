@@ -1,10 +1,10 @@
-.PHONY: help up down restart rebuild logs ps build-api build-web health test lint lint-fix format-check build openapi openapi-check ci
+.PHONY: help up down restart rebuild logs ps build-api build-web health up-prod down-prod health-prod test lint lint-fix format-check build openapi openapi-check ci
 
 help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  up         Build and start all services (detached)"
+	@echo "  up         Build and start all services (detached, live reload: frontend/ + backend/src mounted)"
 	@echo "  down       Stop and remove containers"
 	@echo "  restart    Restart all services (down + up)"
 	@echo "  rebuild    Rebuild images without cache and start"
@@ -13,6 +13,9 @@ help:
 	@echo "  build-api  Build backend image only"
 	@echo "  build-web  Build frontend image only"
 	@echo "  health     Check backend (/api/health) and frontend (/)"
+	@echo "  up-prod    Build and start prod stack (nginx :8080, api not published)"
+	@echo "  down-prod  Stop and remove prod containers"
+	@echo "  health-prod  Check prod (nginx :8080 → /api/health and /)"
 	@echo "  test       Run backend and frontend tests (vitest)"
 	@echo "  lint       Run ESLint in backend and frontend"
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
@@ -49,6 +52,16 @@ build-web:
 health:
 	@curl -s http://localhost:3000/api/health; echo
 	@curl -s -o /dev/null -w "web:%{http_code}\n" http://localhost:5173/
+
+up-prod:
+	docker compose -f docker-compose.prod.yml up --build -d
+
+down-prod:
+	docker compose -f docker-compose.prod.yml down
+
+health-prod:
+	@curl -s http://localhost:8080/api/health; echo
+	@curl -s -o /dev/null -w "web:%{http_code}\n" http://localhost:8080/
 
 test:
 	npm --prefix backend test
