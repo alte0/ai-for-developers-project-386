@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { createBookingApiClient } from '@/api/client'
 
 const FEATURES = [
   {
@@ -16,7 +18,36 @@ const FEATURES = [
   },
 ]
 
+type ApiStatus = 'loading' | 'ok' | 'unavailable'
+
 export default function HomePage() {
+  const [apiStatus, setApiStatus] = useState<ApiStatus>('loading')
+
+  useEffect(() => {
+    let cancelled = false
+    createBookingApiClient()
+      .serviceClient.getHealth()
+      .then((health) => {
+        if (!cancelled) {
+          setApiStatus(health.status === 'ok' ? 'ok' : 'unavailable')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setApiStatus('unavailable')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const apiStatusText = {
+    loading: 'Статус API: проверяем…',
+    ok: 'Статус API: ok',
+    unavailable: 'Статус API: недоступен',
+  }[apiStatus]
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 p-8">
       <section className="flex flex-col items-start gap-4 pt-10">
@@ -52,6 +83,12 @@ export default function HomePage() {
           <Link to="/booking">Перейти к записи</Link>
         </Button>
       </section>
+
+      <footer>
+        <p className="text-sm text-muted-foreground" data-testid="api-status">
+          {apiStatusText}
+        </p>
+      </footer>
     </main>
   )
 }

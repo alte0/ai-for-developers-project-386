@@ -1,10 +1,23 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import HomePage from './HomePage.tsx'
+
+const getHealth = vi.fn()
+
+vi.mock('@/api/client', () => ({
+  createBookingApiClient: () => ({
+    serviceClient: { getHealth: () => getHealth() },
+  }),
+}))
+
+beforeEach(() => {
+  getHealth.mockResolvedValue({ status: 'ok' })
+})
 
 afterEach(() => {
   cleanup()
+  getHealth.mockReset()
 })
 
 function renderHomePage() {
@@ -77,5 +90,24 @@ describe('HomePage (Главная страница)', () => {
     expect(bookLink).toHaveAttribute('href', '/booking')
     expect(goToBookingLink).toBeInTheDocument()
     expect(goToBookingLink).toHaveAttribute('href', '/booking')
+  })
+
+  it('показывает статус API ok, когда бэкенд ответил через SDK', async () => {
+    getHealth.mockResolvedValue({ status: 'ok' })
+    renderHomePage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('api-status')).toHaveTextContent('Статус API: ok')
+    })
+    expect(getHealth).toHaveBeenCalledTimes(1)
+  })
+
+  it('показывает недоступный статус API, когда бэкенд не ответил', async () => {
+    getHealth.mockRejectedValue(new Error('network down'))
+    renderHomePage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('api-status')).toHaveTextContent('Статус API: недоступен')
+    })
   })
 })
