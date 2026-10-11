@@ -19,12 +19,16 @@ jobs:
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
+            spec/package-lock.json
       - name: Install backend deps
         run: npm ci
         working-directory: backend
       - name: Install frontend deps
         run: npm ci
         working-directory: frontend
+      - name: Install spec deps
+        run: npm ci
+        working-directory: spec
       - name: ESLint
         run: make lint
       - name: Prettier check
@@ -44,6 +48,7 @@ jobs:
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
+            spec/package-lock.json
       - name: Install backend deps
         run: npm ci
         working-directory: backend
@@ -67,14 +72,20 @@ jobs:
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
+            spec/package-lock.json
       - name: Install backend deps
         run: npm ci
         working-directory: backend
       - name: Install frontend deps
         run: npm ci
         working-directory: frontend
+      - name: Install spec deps
+        run: npm ci
+        working-directory: spec
       - name: Build packages
         run: make build
+      - name: OpenAPI spec up to date
+        run: make openapi-check
 
   docker:
     name: docker

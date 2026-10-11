@@ -1,4 +1,4 @@
-.PHONY: help up down restart rebuild logs ps build-api build-web health test lint lint-fix format-check build ci
+.PHONY: help up down restart rebuild logs ps build-api build-web health test lint lint-fix format-check build openapi openapi-check ci
 
 help:
 	@echo "Usage: make <target>"
@@ -18,7 +18,9 @@ help:
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
 	@echo "  format-check  Check Prettier formatting"
 	@echo "  build      Build backend and frontend (npm, no Docker)"
-	@echo "  ci         Run lint + format-check + test + build (mirror of CI)"
+	@echo "  openapi    Compile TypeSpec (spec/) to docs/openapi.yaml"
+	@echo "  openapi-check  Regenerate OpenAPI and fail if docs/openapi.yaml drifted"
+	@echo "  ci         Run lint + format-check + test + build + openapi-check (mirror of CI)"
 
 up:
 	docker compose up --build -d
@@ -63,9 +65,19 @@ lint-fix:
 format-check:
 	npm --prefix backend run format:check
 	npm --prefix frontend run format:check
+	npm --prefix spec run format:check
 
 build:
 	npm --prefix backend run build
 	npm --prefix frontend run build
 
-ci: lint format-check test build
+openapi:
+	npm --prefix spec run build
+
+openapi-check: openapi
+	@git ls-files --error-unmatch docs/openapi.yaml >/dev/null 2>&1 || \
+		(echo "docs/openapi.yaml не отслеживается git: запусти 'make openapi' и закоммить файл" && exit 1)
+	@git diff --exit-code -- docs/openapi.yaml || \
+		(echo "docs/openapi.yaml разошёлся с spec/: запусти 'make openapi' и закоммить результат" && exit 1)
+
+ci: lint format-check test build openapi-check

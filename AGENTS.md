@@ -3,11 +3,12 @@
 ## Layout
 - `backend/` — Express API (CommonJS, `src/index.ts` listens, `src/app.ts` exports `createApp()` for tests). Only route: `GET /api/health`.
 - `frontend/` — Vite + React + Tailwind 3 + shadcn-style `src/components/ui/`. Alias `@` → `src/` (set in both `vite.config.ts` and `tsconfig.app.json`).
+- `spec/` — TypeSpec sources for the API contract (`main.tsp`, `models.tsp`, `routes/*.tsp`). `make openapi` compiles them to `docs/openapi.yaml` — never edit that YAML by hand. Contract source of truth for intent is `docs/spec.md` §3; the `.tsp` files describe the whole contract, not just implemented routes.
 - Root has no `package.json`; each package has its own lockfile and scripts. Use `make` targets or `npm --prefix <pkg>`.
 
 ## Verification
-- Full local mirror of CI: `make ci` (= `lint` + `format-check` + `test` + `build`).
-- Single checks: `make lint`, `make format-check`, `make test` (backend + frontend Vitest), `make build` (npm builds, no Docker).
+- Full local mirror of CI: `make ci` (= `lint` + `format-check` + `test` + `build` + `openapi-check`).
+- Single checks: `make lint`, `make format-check` (backend + frontend + spec Prettier), `make test` (backend + frontend Vitest), `make build` (npm builds, no Docker), `make openapi` (TypeSpec → `docs/openapi.yaml`), `make openapi-check` (regenerate + fail on drift vs committed YAML).
 - Docker: `make up` / `make health` (`:3000/api/health` → `{"status":"ok"}`, `:5173/` → 200). `build-api`/`build-web` build images only.
 - CI (`.github/workflows/ci.yml`, Node 24) runs the same on every push/PR, plus `docker compose build`. Don't touch `hexlet-check.yml`.
 
@@ -18,6 +19,8 @@
 - Strict ESLint (`typescript-eslint strict`): no `!` non-null assertions (`frontend/src/main.tsx` shows the guard-throw pattern); `react-hooks/set-state-in-effect` fires on fetch-in-`useEffect` — existing `App.tsx` uses a targeted disable, follow that.
 - `react-refresh/only-export-components` warning on `button.tsx` (`buttonVariants` export) is an accepted shadcn pattern — leave it.
 - Prettier: shared root `.prettierrc`, but each package needs its own `.prettierignore` (must list `dist`) or `format-check` fails on build output.
+- `spec/` compiles with `@typespec/compiler@1.17`: decorator object args use the value syntax `#{ ... }`, not `{ ... }`; timestamps are `utcDateTime` (camelCase); `docs/openapi.yaml` output path is set in `spec/tspconfig.yaml`. After changing `.tsp` files always run `make openapi` and commit the regenerated YAML together with the sources — CI fails on drift.
+- `spec/` is not in `release-please-config.json` (private, unversioned): `feat(spec): ...` commits do not cut a release.
 
 ## Commits (Conventional Commits — required by release-please)
 - Format: `<type>[optional scope]: <subject>` in imperative, lowercase subject, no trailing period. Max ~72 chars for subject.

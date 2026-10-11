@@ -12,6 +12,7 @@
 
 - Backend: TypeScript, Express (`backend/`, порт 3000, `GET /api/health`)
 - Frontend: TypeScript, Vite + React, Tailwind, shadcn/ui (`frontend/`, порт 5173)
+- API-контракт: TypeSpec (`spec/`) → OpenAPI (`docs/openapi.yaml`)
 - Инфраструктура: Docker, docker-compose
 
 ## Установка
@@ -30,6 +31,16 @@ docker compose up --build
 ## Использование
 
 <!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+
+## API-контракт
+
+Контракт описывается в TypeSpec (`spec/`), смысл — в `docs/spec.md` §3. Сгенерированный OpenAPI лежит в `docs/openapi.yaml`; руками его не правят.
+
+```bash
+npm --prefix spec install   # однократно
+make openapi                # spec/*.tsp → docs/openapi.yaml
+make openapi-check          # перегенерация + проверка, что YAML не разошёлся с исходниками
+```
 
 ---
 
