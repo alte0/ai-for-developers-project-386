@@ -1,0 +1,943 @@
+openapi: 3.0.0
+info:
+  title: Календарь звонков
+  version: 1.0.0
+  description: |-
+    Контракт сервиса бронирования звонков.
+
+    Источник истины — `docs/spec.md`, §3 (API-контракт). OpenAPI-документ
+    `docs/openapi.yaml` генерируется из этих файлов (`make openapi`) и не
+    редактируется руками.
+
+    Общие правила контракта: `Content-Type: application/json`; даты — ISO-8601
+    UTC с `Z` и секундами; пути без версионирования (`/api/...`); пагинации нет;
+    ошибки — единый конверт `{ "error": { "code", "message" } }`.
+tags:
+  - name: service
+  - name: guest
+  - name: admin
+paths:
+  /api/admin/bookings:
+    get:
+      operationId: Admin_listAdminBookings
+      description: Журнал записей (будущие и прошедшие).
+      parameters:
+        - name: from
+          in: query
+          required: false
+          description: 'Отсечка: показывать записи с `start` не раньше этого момента.'
+          schema:
+            type: string
+            format: date-time
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Admin.BookingAdmin'
+      tags:
+        - admin
+  /api/admin/bookings/{id}:
+    delete:
+      operationId: Admin_deleteBooking
+      description: Отмена владельцем; время освобождается автоматически.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+  /api/admin/event-types:
+    get:
+      operationId: Admin_listAdminEventTypes
+      description: Типы событий с `availabilityMode`.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Admin.EventTypeAdmin'
+      tags:
+        - admin
+    post:
+      operationId: Admin_createEventType
+      description: Создание типа события.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.EventTypeAdmin'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - invalid_name
+                          - invalid_duration
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Admin.CreateEventType'
+  /api/admin/event-types/{id}:
+    get:
+      operationId: Admin_getAdminEventType
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.EventTypeAdmin'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+    patch:
+      operationId: Admin_updateEventType
+      description: Переименование / смена длительности (действует только на будущие слоты).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.EventTypeAdmin'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - invalid_name
+                          - invalid_duration
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Admin.UpdateEventType'
+    delete:
+      operationId: Admin_deleteEventType
+      description: Удаление типа; при наличии записей → 409.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_has_bookings
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+  /api/admin/event-types/{id}/schedule:
+    put:
+      operationId: Admin_replaceSchedule
+      description: Заменяет **всю** неделю разлом. Ответ 200 без тела.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - invalid_schedule
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Admin.ScheduleInterval'
+  /api/admin/event-types/{id}/windows:
+    get:
+      operationId: Admin_listWindows
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Admin.Window'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+    post:
+      operationId: Admin_createWindow
+      description: Создание ручного окна; только будущее (`start >= now`), пересечения разрешены.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.Window'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - invalid_window
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Admin.CreateWindow'
+  /api/admin/windows/{id}:
+    delete:
+      operationId: Admin_deleteWindow
+      description: Удаление окна; существующие записи не трогает (запись привязана к типу, не к окну).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - admin
+  /api/bookings:
+    post:
+      operationId: Guest_createBooking
+      description: 'Создание записи. Порядок проверок (spec.md §3.1): несуществующий тип → 404; вне горизонта → 422 `slot_out_of_range`; не в нарезке → 422 `slot_not_scheduled`; плохой контакт → 422 `invalid_contact`; конфликт → 409 `slot_taken` (последним, гонка гарантированно превращается в 409).'
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guest.BookingPublic'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - slot_taken
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - slot_out_of_range
+                          - slot_not_scheduled
+                          - invalid_contact
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - guest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Guest.CreateBooking'
+  /api/event-types:
+    get:
+      operationId: Guest_listEventTypes
+      description: 'Список типов событий в гостевой проекции: без `availabilityMode`.'
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guest.EventTypeGuest'
+      tags:
+        - guest
+  /api/health:
+    get:
+      operationId: Service_getHealth
+      description: Проба живости бэкенда.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+      tags:
+        - service
+  /api/slots:
+    get:
+      operationId: Guest_listSlots
+      description: Свободные слоты типа на горизонт `now … now + 14д` (задаёт сервер, параметров `from`/`to` нет). Занятые и пересекающиеся с любыми записями исключаются (общий календарь владельца). `eventTypeId` обязателен — нарезка зависит от длительности.
+      parameters:
+        - name: eventTypeId
+          in: query
+          required: true
+          description: Идентификатор типа события.
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guest.Slot'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - event_type_not_found
+                        description: Машинный код ошибки.
+                      message:
+                        type: string
+                        description: Человекочитаемое описание.
+      tags:
+        - guest
+components:
+  schemas:
+    Admin.AvailabilityMode:
+      type: string
+      enum:
+        - schedule
+        - windows
+      description: Режим доступности типа события (взаимоисключающие «расписание» и «ручные окна»).
+    Admin.BookingAdmin:
+      type: object
+      required:
+        - id
+        - eventTypeId
+        - start
+        - end
+        - name
+        - email
+        - createdAt
+      properties:
+        id:
+          type: integer
+          format: int32
+        eventTypeId:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+          description: Конец замораживается при создании записи.
+        name:
+          type: string
+        email:
+          type: string
+        note:
+          type: string
+          maxLength: 500
+        createdAt:
+          type: string
+          format: date-time
+      description: 'Запись в журнале: будущие и прошедшие; контакт виден владельцу.'
+    Admin.CreateEventType:
+      type: object
+      required:
+        - name
+        - durationMinutes
+        - availabilityMode
+      properties:
+        name:
+          type: string
+          description: 'Название: trim, непустое.'
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 15
+          maximum: 480
+          description: 15…480 минут.
+        availabilityMode:
+          $ref: '#/components/schemas/Admin.AvailabilityMode'
+    Admin.CreateWindow:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+          description: '`start >= now`: окна в прошлом создавать нельзя.'
+        end:
+          type: string
+          format: date-time
+    Admin.EventTypeAdmin:
+      type: object
+      required:
+        - id
+        - name
+        - durationMinutes
+        - availabilityMode
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+          description: Длительность в минутах, 15…480.
+        availabilityMode:
+          $ref: '#/components/schemas/Admin.AvailabilityMode'
+      description: 'Тип события в админской проекции: с режимом доступности.'
+    Admin.ScheduleInterval:
+      type: object
+      required:
+        - weekday
+        - startMinute
+        - endMinute
+      properties:
+        weekday:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 6
+          description: 0 — понедельник … 6 — воскресенье.
+        startMinute:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1439
+          description: Минута начала суток, 0…1439; через полночь нельзя (start < end).
+        endMinute:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 1440
+      description: 'Интервал расписания: минуты UTC-суток, start < end; несколько интервалов в один день.'
+    Admin.UpdateEventType:
+      type: object
+      properties:
+        name:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+          minimum: 15
+          maximum: 480
+      description: 'PATCH: переименование и/или смена длительности; смена длительности действует только на будущие слоты.'
+    Admin.Window:
+      type: object
+      required:
+        - id
+        - start
+        - end
+      properties:
+        id:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+      description: 'Ручное окно доступности. Append-only: создавать только в будущем, редактирования нет.'
+    Guest.BookingPublic:
+      type: object
+      required:
+        - id
+        - eventTypeId
+        - start
+        - end
+      properties:
+        id:
+          type: integer
+          format: int32
+        eventTypeId:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+          description: Конец замораживается при создании записи.
+      description: 'Публичная часть записи: контакт в ответ не возвращается, `id` — «номер записи».'
+    Guest.CreateBooking:
+      type: object
+      required:
+        - eventTypeId
+        - start
+        - name
+        - email
+      properties:
+        eventTypeId:
+          type: integer
+          format: int32
+        start:
+          type: string
+          format: date-time
+          description: Начало слота; сервер пересчитывает и проверяет его сам, клиенту не доверяем.
+        name:
+          type: string
+        email:
+          type: string
+        note:
+          type: string
+          maxLength: 500
+          description: Необязательная заметка, ≤ 500 символов.
+    Guest.EventTypeGuest:
+      type: object
+      required:
+        - id
+        - name
+        - durationMinutes
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+          description: Длительность в минутах, 15…480.
+      description: 'Усечённая проекция типа события для гостя: без режима доступности (spec.md §3.1).'
+    Guest.Slot:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+      description: 'Свободный слот: время UTC.'
+    HealthStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+servers:
+  - url: http://localhost:3000
+    description: Локальная разработка
+    variables: {}
