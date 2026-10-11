@@ -1,15 +1,24 @@
 services:
   api:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     ports:
       - '3000:3000'
     env_file:
       - ./backend/.env.example
+    volumes:
+      - ./backend/src:/app/src
   web:
     build:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
       - '5173:5173'
+    volumes:
+      # Live reload: правки в frontend/ видны сразу (Vite HMR), без пересборки.
+      - ./frontend:/app/frontend
+      # Контейнерный node_modules (иначе bind-mount хостит хостовые модули, собранные под macOS).
+      - /app/frontend/node_modules
     depends_on:
       - api
