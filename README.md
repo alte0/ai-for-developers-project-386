@@ -34,13 +34,18 @@ docker compose up --build
 
 ## API-контракт
 
-Контракт описывается в TypeSpec (`spec/`), смысл — в `docs/spec.md` §3. Сгенерированный OpenAPI лежит в `docs/openapi.yaml`; руками его не правят.
+Контракт описывается в TypeSpec (`spec/`), смысл — в `docs/spec.md` §3. Из исходников генерируются два артефакта (руками не правятся):
+
+- `docs/openapi.yaml` — OpenAPI-документ;
+- `spec/client/` — TypeScript-SDK (`@booking/client`), фронтенд подключает его через `file:`-зависимость и вызывает через обёртку `frontend/src/api/client.ts`.
 
 ```bash
-npm --prefix spec install   # однократно
-make openapi                # spec/*.tsp → docs/openapi.yaml
-make openapi-check          # перегенерация + проверка, что YAML не разошёлся с исходниками
+npm --prefix spec install       # однократно
+make openapi                    # spec/*.tsp → docs/openapi.yaml + SDK в spec/client
+make openapi-check              # перегенерация + проверка, что git не разошёлся
 ```
+
+После `make openapi` SDK нужно пересобрать в фронтенде — `npm --prefix frontend install` подхватит обновлённый `dist/` симлинком автоматически (сборка `dist/` уже входит в `make openapi`).
 
 ---
 

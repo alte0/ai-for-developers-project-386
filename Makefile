@@ -18,9 +18,9 @@ help:
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
 	@echo "  format-check  Check Prettier formatting"
 	@echo "  build      Build backend and frontend (npm, no Docker)"
-	@echo "  openapi    Compile TypeSpec (spec/) to docs/openapi.yaml"
-	@echo "  openapi-check  Regenerate OpenAPI and fail if docs/openapi.yaml drifted"
-	@echo "  ci         Run lint + format-check + test + build + openapi-check (mirror of CI)"
+	@echo "  openapi    Compile TypeSpec: docs/openapi.yaml + SDK in spec/client"
+	@echo "  openapi-check  Regenerate contract artifacts and fail if git drifts"
+	@echo "  ci         Run openapi + lint + format-check + test + build + openapi-check (mirror of CI)"
 
 up:
 	docker compose up --build -d
@@ -73,11 +73,14 @@ build:
 
 openapi:
 	npm --prefix spec run build
+	node spec/scripts/patch-client-package.mjs
+	npm --prefix spec/client ci --no-audit --no-fund
+	npm --prefix spec/client run build
 
 openapi-check: openapi
-	@git ls-files --error-unmatch docs/openapi.yaml >/dev/null 2>&1 || \
-		(echo "docs/openapi.yaml не отслеживается git: запусти 'make openapi' и закоммить файл" && exit 1)
-	@git diff --exit-code -- docs/openapi.yaml || \
-		(echo "docs/openapi.yaml разошёлся с spec/: запусти 'make openapi' и закоммить результат" && exit 1)
+	@git ls-files --error-unmatch docs/openapi.yaml spec/client/src/index.ts >/dev/null 2>&1 || \
+		(echo "контракт не отслеживается git: запусти 'make openapi' и закоммить docs/openapi.yaml + spec/client" && exit 1)
+	@git diff --exit-code -- docs/openapi.yaml spec/client/src spec/client/package.json spec/client/package-lock.json || \
+		(echo "контракт разошёлся с git: запусти 'make openapi' и закоммить результат" && exit 1)
 
-ci: lint format-check test build openapi-check
+ci: openapi lint format-check test build openapi-check
