@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/alte0/ai-for-developers-project-386/compare/frontend-v1.1.0...frontend-v1.2.0) (2026-10-11)
+
+
+### Features
+
+* **frontend:** consume generated sdk via booking client wrapper ([9f4ddb1](https://github.com/alte0/ai-for-developers-project-386/commit/9f4ddb1f860be3df2fb7a7ee7f850422837fce4a))
+* **spec:** generate typescript sdk from typespec contract ([803a71f](https://github.com/alte0/ai-for-developers-project-386/commit/803a71feda5b454eab333ed6e718e58811031721))
+
 ## [1.1.0](https://github.com/alte0/ai-for-developers-project-386/compare/frontend-v1.0.1...frontend-v1.1.0) (2026-10-07)
 
 

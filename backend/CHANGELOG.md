@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/alte0/ai-for-developers-project-386/compare/backend-v0.1.2...backend-v0.2.0) (2026-10-11)
+
+
+### Features
+
+* **backend:** validate requests with ajv and mount contract stubs ([6e4b018](https://github.com/alte0/ai-for-developers-project-386/commit/6e4b0184e3c305dd4933a11813e70a00946d5f85))
+* **spec:** generate server types, contracts and route stubs ([3a8de18](https://github.com/alte0/ai-for-developers-project-386/commit/3a8de18deb51aa0f67487555ec1b6b2cfb401d0c))
+
 ## [0.1.2](https://github.com/alte0/ai-for-developers-project-386/compare/backend-v0.1.1...backend-v0.1.2) (2026-10-04)
 
 
