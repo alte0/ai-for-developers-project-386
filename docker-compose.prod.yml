@@ -9,6 +9,9 @@ services:
       target: run
     env_file:
       - ./backend/.env.example
+    volumes:
+      # SQLite-база переживает пересоздание контейнера (путь из DATABASE_PATH, ./data/booking.db).
+      - booking-db:/app/data
   web:
     build:
       context: .
@@ -18,3 +21,6 @@ services:
       - '8080:80'
     depends_on:
       - api
+
+volumes:
+  booking-db:

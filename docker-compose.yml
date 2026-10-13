@@ -9,6 +9,8 @@ services:
       - ./backend/.env.example
     volumes:
       - ./backend/src:/app/src
+      # SQLite-база переживает пересоздание контейнера (путь из DATABASE_PATH, ./data/booking.db).
+      - ./backend/data:/app/data
   web:
     build:
       context: .
