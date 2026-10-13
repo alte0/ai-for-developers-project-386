@@ -78,9 +78,10 @@ describe('контракт: заготовки маршрутов', () => {
     expect(res.body.error.message).toContain('eventTypeId')
   })
 
-  it('GET /api/slots с валидным query отвечает 501', async () => {
+  it('GET /api/slots для неизвестного типа отвечает 404 event_type_not_found', async () => {
     const res = await request(createApp()).get('/api/slots?eventTypeId=1')
-    expect(res.status).toBe(501)
+    expect(res.status).toBe(404)
+    expect(res.body.error.code).toBe('event_type_not_found')
   })
 
   it('POST /api/admin/event-types с durationMinutes вне 15…480 отвечает 400', async () => {
