@@ -1,12 +1,7 @@
-/**
- * Заготовка маршрута `GET /api/event-types` (operationId: Guest_listEventTypes).
- *
- * Создана spec/scripts/generate-server-artifacts.mjs; генератор существующие файлы
- * не перезаписывает — дальше правишь сам. Логика — по docs/spec.md §3.1.
- * Вход уже проверен `validateRequest` (схема в generated/contracts.gen.ts).
- */
 import { Router, type Request, type Response } from 'express'
 
+import type { GuestEventTypeGuest } from '../../generated/schema.gen.js'
+import { getStorage } from '../../lib/storage-access.js'
 import { validateRequest } from '../../lib/validate-request.js'
 
 export const listEventTypesRouter = Router()
@@ -14,7 +9,10 @@ export const listEventTypesRouter = Router()
 listEventTypesRouter.get(
   '/event-types',
   validateRequest('Guest_listEventTypes'),
-  (_req: Request, res: Response) => {
-    res.status(501).json({ error: { code: 'not_implemented', message: 'Not implemented' } })
+  (req: Request, res: Response) => {
+    const guestProjection: GuestEventTypeGuest[] = getStorage(req)
+      .listEventTypes()
+      .map(({ id, name, durationMinutes }) => ({ id, name, durationMinutes }))
+    res.json(guestProjection)
   },
 )

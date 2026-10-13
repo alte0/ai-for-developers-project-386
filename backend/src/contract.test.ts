@@ -96,8 +96,9 @@ describe('контракт: заготовки маршрутов', () => {
     expect(res.status).toBe(501)
   })
 
-  it('GET /api/event-types отвечает 501 (заготовка гостевого списка)', async () => {
+  it('GET /api/event-types отвечает 200 и пустым списком на пустом хранилище', async () => {
     const res = await request(createApp()).get('/api/event-types')
-    expect(res.status).toBe(501)
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual([])
   })
 })
