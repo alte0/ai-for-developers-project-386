@@ -17,6 +17,7 @@ import addFormats from 'ajv-formats'
 import type { RequestHandler, Response } from 'express'
 
 import { requestSchemas } from '../generated/contracts.gen.js'
+import { sendError } from './api-error.js'
 
 type OperationValidators = {
   params?: ValidateFunction
@@ -55,9 +56,7 @@ function formatErrors(errors: ErrorObject[] | null | undefined): string {
 }
 
 function reject(res: Response, section: string, errors: ErrorObject[] | null | undefined): void {
-  res.status(400).json({
-    error: { code: 'invalid_request', message: `${section}: ${formatErrors(errors)}` },
-  })
+  sendError(res, 400, 'invalid_request', `${section}: ${formatErrors(errors)}`)
 }
 
 /** Middleware: проверяет path/query/тело операции и пропускает дальше либо отвечает 400. */
