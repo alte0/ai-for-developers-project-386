@@ -1,20 +1,31 @@
-/**
- * Заготовка маршрута `GET /api/admin/bookings` (operationId: Admin_listAdminBookings).
- *
- * Создана spec/scripts/generate-server-artifacts.mjs; генератор существующие файлы
- * не перезаписывает — дальше правишь сам. Логика — по docs/spec.md §3.2.
- * Вход уже проверен `validateRequest` (схема в generated/contracts.gen.ts).
- */
 import { Router, type Request, type Response } from 'express'
 
+import type { AdminBookingAdmin } from '../../generated/schema.gen.js'
+import { getStorage } from '../../lib/storage-access.js'
+import type { BookingRecord } from '../../storage/types.js'
 import { validateRequest } from '../../lib/validate-request.js'
 
 export const listAdminBookingsRouter = Router()
 
+function toAdminEntry(booking: BookingRecord): AdminBookingAdmin {
+  return {
+    id: booking.id,
+    eventTypeId: booking.eventTypeId,
+    start: booking.start,
+    end: booking.end,
+    name: booking.name,
+    email: booking.email,
+    note: booking.note ?? undefined,
+    createdAt: booking.createdAt,
+  }
+}
+
 listAdminBookingsRouter.get(
   '/admin/bookings',
   validateRequest('Admin_listAdminBookings'),
-  (_req: Request, res: Response) => {
-    res.status(501).json({ error: { code: 'not_implemented', message: 'Not implemented' } })
+  (req: Request, res: Response) => {
+    const fromParam = req.query.from
+    const from = typeof fromParam === 'string' ? fromParam : undefined
+    res.json(getStorage(req).listBookings(from).map(toAdminEntry))
   },
 )

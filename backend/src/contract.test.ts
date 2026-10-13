@@ -4,20 +4,20 @@ import { describe, expect, it } from 'vitest'
 import { createApp } from './app.js'
 
 /**
- * Контрактные проверки заготовок, сгенерированных из docs/openapi.yaml:
- * структурная валидация входа (ajv) и ответы ещё не реализованных операций.
+ * Контрактные проверки по docs/openapi.yaml: структурная валидация входа (ajv)
+ * и базовые ответы операций на пустом хранилище.
  */
-describe('контракт: заготовки маршрутов', () => {
-  it('POST /api/bookings с валидным телом отвечает 501 not_implemented', async () => {
+describe('контракт: валидация входа и базовые ответы', () => {
+  it('POST /api/bookings с валидным телом для неизвестного типа отвечает 404', async () => {
     const res = await request(createApp()).post('/api/bookings').send({
       eventTypeId: 1,
       start: '2026-10-13T10:00:00Z',
       name: 'Иван',
       email: 'ivan@example.com',
     })
-    expect(res.status).toBe(501)
+    expect(res.status).toBe(404)
     expect(res.body).toEqual({
-      error: { code: 'not_implemented', message: 'Not implemented' },
+      error: { code: 'event_type_not_found', message: expect.any(String) },
     })
   })
 
@@ -92,9 +92,10 @@ describe('контракт: заготовки маршрутов', () => {
     expect(res.body.error.message).toContain('durationMinutes')
   })
 
-  it('DELETE /api/admin/bookings/1 со строковым id (коэрция) отвечает 501', async () => {
+  it('DELETE /api/admin/bookings/1 для неизвестной Записи отвечает 404 not_found', async () => {
     const res = await request(createApp()).delete('/api/admin/bookings/1')
-    expect(res.status).toBe(501)
+    expect(res.status).toBe(404)
+    expect(res.body.error.code).toBe('not_found')
   })
 
   it('GET /api/event-types отвечает 200 и пустым списком на пустом хранилище', async () => {
