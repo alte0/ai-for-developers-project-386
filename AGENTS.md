@@ -38,6 +38,7 @@
   - `fix(frontend): handle empty health response`
   - `feat(backend)!: change health response shape`
   - `chore: update ci node version`
+- Ticket reference: every commit made while working a ticket references it in the body footer — `Refs #<n>` by default, `Closes #<n>` only when the commit completes the ticket (`Closes`/`Fixes` on a commit pushed to `main` auto-closes the issue in GitHub — use deliberately). The subject stays a clean Conventional Commit; do not put `#<n>` there.
 - Mechanics: release-please (manifest mode, `backend` + `frontend` in `release-please-config.json`, versions in `.release-please-manifest.json`) reads history of `main`; release workflow runs only on push to `main`. Don't edit release tags/CHANGELOGs by hand.
 
 ## Agent skills
