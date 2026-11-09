@@ -64,7 +64,6 @@ docker run --rm -v "$PWD/.env:/app/.env:ro" -p 3000:3000 booking-app
 Приложение опубликовано на Render как Docker web service:
 
 - URL: https://booking-calendar-386.onrender.com
-- Dashboard: https://dashboard.render.com/web/srv-dbol5rhsrm7s73caugrg
 - Ветка `main`, план Free, регион Frankfurt.
 - Сервис подключён к публичному Git-URL, поэтому автодеплой по push не срабатывает: после изменений запускайте Manual Deploy в Dashboard или `trigger_deploy` через Render MCP.
 
