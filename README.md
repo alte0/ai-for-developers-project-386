@@ -81,6 +81,21 @@ make openapi-check              # перегенерация + проверка,
 
 После `make openapi` SDK нужно пересобрать в фронтенде — `npm --prefix frontend install` подхватит обновлённый `dist/` симлинком автоматически (сборка `dist/` уже входит в `make openapi`).
 
+## MCP (Render) для OpenCode
+
+`opencode.json` подключает Render MCP. Ключ читается из `.secrets/render-api-key` и в git не попадает (`.secrets/` в `.gitignore`).
+
+```bash
+make mcp-secret     # запросит ключ без эха, создаст .secrets/render-api-key (chmod 600)
+make mcp-check      # ✓ render connected
+```
+
+Ключ: Render Dashboard → Account Settings → API Keys.
+
+Если файла нет, OpenCode не загрузит конфиг (`bad file reference`) — сначала выполните `make mcp-secret`. OpenCode не читает `.env`, поэтому переменные окружения проекта тут не используются.
+
+> ⚠️ Инструменты Render могут менять env-переменные сервисов и запускать деплои — деструктивны.
+
 ---
 
 <details>

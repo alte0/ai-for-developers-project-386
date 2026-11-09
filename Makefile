@@ -1,4 +1,4 @@
-.PHONY: help up down restart rebuild logs ps build-api build-web health build-app up-app down-app logs-app health-app test lint lint-fix format-check build openapi openapi-check ci
+.PHONY: help up down restart rebuild logs ps build-api build-web health build-app up-app down-app logs-app health-app mcp-secret mcp-check test lint lint-fix format-check build openapi openapi-check ci
 
 help:
 	@echo "Usage: make <target>"
@@ -18,6 +18,8 @@ help:
 	@echo "  down-app   Stop and remove the single container"
 	@echo "  logs-app   Follow logs of the single container"
 	@echo "  health-app Check single container (PORT from .env)"
+	@echo "  mcp-secret Save Render MCP API key to .secrets/render-api-key (gitignored)"
+	@echo "  mcp-check  Show OpenCode MCP servers status"
 	@echo "  test       Run backend and frontend tests (vitest)"
 	@echo "  lint       Run ESLint in backend and frontend"
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
@@ -77,6 +79,26 @@ health-app:
 	@port=$$(sed -n 's/^PORT=//p' .env 2>/dev/null | tail -1); port=$${port:-3000}; \
 	curl -s "http://localhost:$$port/api/health"; echo; \
 	curl -s -o /dev/null -w "web:%{http_code}\n" "http://localhost:$$port/"
+
+mcp-secret:
+	@mkdir -p .secrets
+	@if [ -s .secrets/render-api-key ]; then \
+		echo "Render API key already exists: .secrets/render-api-key"; \
+		echo "Remove it first to recreate."; \
+	else \
+		printf "Render API key (rnd_...): "; \
+		stty -echo 2>/dev/null || true; \
+		IFS= read -r key; \
+		stty echo 2>/dev/null || true; \
+		echo; \
+		[ -n "$$key" ] || { echo "Empty key, aborted"; exit 1; }; \
+		printf '%s' "$$key" > .secrets/render-api-key; \
+		chmod 600 .secrets/render-api-key; \
+		echo "Saved: .secrets/render-api-key (gitignored)"; \
+	fi
+
+mcp-check:
+	@opencode mcp list
 
 test:
 	npm --prefix backend test
