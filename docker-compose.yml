@@ -1,12 +1,18 @@
+# Dev-стек: два сервиса из единственного корневого Dockerfile.
+# Production/проверка — один контейнер из стадии `runtime`: `make up-app`.
 services:
   api:
     build:
-      context: ./backend
-      target: dev
+      context: .
+      target: dev-api
     ports:
-      - '3000:3000'
+      - '${PORT:-3000}:${PORT:-3000}'
     env_file:
-      - ./backend/.env.example
+      # Корневой .env не обязателен: без него PORT берётся из environment ниже.
+      - path: ./.env
+        required: false
+    environment:
+      PORT: ${PORT:-3000}
     volumes:
       - ./backend/src:/app/src
       # SQLite-база переживает пересоздание контейнера (путь из DATABASE_PATH, ./data/booking.db).
@@ -14,10 +20,13 @@ services:
   web:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
-      target: dev
+      target: dev-web
     ports:
       - '5173:5173'
+    environment:
+      # Vite проксирует /api на api:${PORT}. Локально без Docker:
+      # API_URL=http://localhost:3000 npm --prefix frontend run dev
+      API_URL: http://api:${PORT:-3000}
     volumes:
       # Live reload: правки в frontend/ видны сразу (Vite HMR), без пересборки.
       - ./frontend:/app/frontend

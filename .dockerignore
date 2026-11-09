@@ -4,3 +4,7 @@
 .git
 .idea
 .vscode
+.secrets
+**/.env
+**/.env.*
+backend/data

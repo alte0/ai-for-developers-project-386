@@ -1,21 +1,23 @@
-.PHONY: help up down restart rebuild logs ps build-api build-web health up-prod down-prod health-prod test lint lint-fix format-check build openapi openapi-check ci
+.PHONY: help up down restart rebuild logs ps build-api build-web health build-app up-app down-app logs-app health-app test lint lint-fix format-check build openapi openapi-check ci
 
 help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  up         Build and start all services (detached, live reload: frontend/ + backend/src mounted)"
-	@echo "  down       Stop and remove containers"
-	@echo "  restart    Restart all services (down + up)"
-	@echo "  rebuild    Rebuild images without cache and start"
-	@echo "  logs       Follow logs of all services"
-	@echo "  ps         Show containers status"
-	@echo "  build-api  Build backend image only"
-	@echo "  build-web  Build frontend image only"
-	@echo "  health     Check backend (/api/health) and frontend (/)"
-	@echo "  up-prod    Build and start prod stack (nginx :8080, api not published)"
-	@echo "  down-prod  Stop and remove prod containers"
-	@echo "  health-prod  Check prod (nginx :8080 → /api/health and /)"
+	@echo "  up         Build and start dev stack (api + web, live reload)"
+	@echo "  down       Stop and remove dev containers"
+	@echo "  restart    Restart dev stack (down + up)"
+	@echo "  rebuild    Rebuild dev images without cache and start"
+	@echo "  logs       Follow logs of dev services"
+	@echo "  ps         Show dev containers status"
+	@echo "  build-api  Build dev api image only"
+	@echo "  build-web  Build dev web image only"
+	@echo "  health     Check dev api (PORT from .env) and web (:5173)"
+	@echo "  build-app  Build single-container production image from root Dockerfile"
+	@echo "  up-app     Build and run single container (PORT from .env)"
+	@echo "  down-app   Stop and remove the single container"
+	@echo "  logs-app   Follow logs of the single container"
+	@echo "  health-app Check single container (PORT from .env)"
 	@echo "  test       Run backend and frontend tests (vitest)"
 	@echo "  lint       Run ESLint in backend and frontend"
 	@echo "  lint-fix   Auto-fix ESLint issues in backend and frontend"
@@ -25,7 +27,10 @@ help:
 	@echo "  openapi-check  Regenerate contract artifacts and fail if git drifts"
 	@echo "  ci         Run openapi + lint + format-check + test + build + openapi-check (mirror of CI)"
 
-up:
+.env:
+	cp .env.example .env
+
+up: .env
 	docker compose up --build -d
 
 down:
@@ -33,7 +38,7 @@ down:
 
 restart: down up
 
-rebuild:
+rebuild: .env
 	docker compose build --no-cache
 	docker compose up -d
 
@@ -50,18 +55,28 @@ build-web:
 	docker compose build web
 
 health:
-	@curl -s http://localhost:3000/api/health; echo
-	@curl -s -o /dev/null -w "web:%{http_code}\n" http://localhost:5173/
+	@port=$$(sed -n 's/^PORT=//p' .env 2>/dev/null | tail -1); port=$${port:-3000}; \
+	curl -s "http://localhost:$$port/api/health"; echo; \
+	curl -s -o /dev/null -w "web:%{http_code}\n" http://localhost:5173/
 
-up-prod:
-	docker compose -f docker-compose.prod.yml up --build -d
+build-app:
+	docker build -t booking-app .
 
-down-prod:
-	docker compose -f docker-compose.prod.yml down
+up-app: .env build-app
+	@docker rm -f booking-app >/dev/null 2>&1 || true
+	@port=$$(sed -n 's/^PORT=//p' .env | tail -1); \
+	docker run --rm -d --name booking-app --env-file .env -p "$$port:$$port" booking-app
 
-health-prod:
-	@curl -s http://localhost:8080/api/health; echo
-	@curl -s -o /dev/null -w "web:%{http_code}\n" http://localhost:8080/
+down-app:
+	@docker rm -f booking-app >/dev/null 2>&1 || true
+
+logs-app:
+	docker logs -f booking-app
+
+health-app:
+	@port=$$(sed -n 's/^PORT=//p' .env 2>/dev/null | tail -1); port=$${port:-3000}; \
+	curl -s "http://localhost:$$port/api/health"; echo; \
+	curl -s -o /dev/null -w "web:%{http_code}\n" "http://localhost:$$port/"
 
 test:
 	npm --prefix backend test

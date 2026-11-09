@@ -5,7 +5,9 @@ import { createSqliteStorage } from './storage/sqlite.js'
 
 dotenv.config()
 
-const app = createApp(createSqliteStorage({ path: config.databasePath }))
+const app = createApp(createSqliteStorage({ path: config.databasePath }), {
+  staticDir: process.env.STATIC_DIR,
+})
 const PORT = Number(process.env.PORT ?? 3000)
 
 app.listen(PORT, () => {

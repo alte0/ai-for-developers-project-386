@@ -10,7 +10,7 @@
 
 ## Стек
 
-- Backend: TypeScript, Express (`backend/`, порт 3000, `GET /api/health`)
+- Backend: TypeScript, Express (`backend/`, порт из `PORT` — по умолчанию 3000, `GET /api/health`)
 - Frontend: TypeScript, Vite + React, Tailwind, shadcn/ui (`frontend/`, порт 5173)
 - API-контракт: TypeSpec (`spec/`) → OpenAPI (`docs/openapi.yaml`)
 - Инфраструктура: Docker, docker-compose
@@ -22,15 +22,42 @@
 ```bash
 git clone https://github.com/alte0/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
-make up          # dev-режим (по умолчанию)
-# или:
-make up-prod     # prod-режим (nginx, статика + /api)
+cp .env.example .env   # PORT=3000
+make up                # dev: api + web (live reload)
 ```
 
-- Dev: frontend http://localhost:5173, backend http://localhost:3000/api/health → `{"status":"ok"}`
-- Prod: http://localhost:8080 — nginx раздаёт собранную статику и проксирует `/api` на backend (порт api наружу не публикуется); остановка — `make down-prod`
+- Dev: frontend http://localhost:5173, backend http://localhost:3000/api/health → `{"status":"ok"}` (порт берётся из `PORT` в `.env`, по умолчанию 3000)
+- Остановка: `make down`
 
-Dev-стек заточен под разработку: исходники `frontend/` и `backend/src` смонтированы в контейнеры, правки подхватываются на лету (Vite HMR, `node --watch`) — пересборка (`make up`) нужна только после смены зависимостей или Dockerfile, а также после `make openapi` (контейнеру web нужен свежий образ SDK). Режимы независимы: dev и prod могут работать одновременно (разные порты).
+Dev-стек заточен под разработку: исходники `frontend/` и `backend/src` смонтированы в контейнеры, правки подхватываются на лету (Vite HMR, `node --watch`) — пересборка (`make up`) нужна только после смены зависимостей или Dockerfile, а также после `make openapi` (контейнеру web нужен свежий образ SDK). Оба dev-сервиса собираются из единственного корневого `Dockerfile` (стадии `dev-api`/`dev-web`).
+
+### Один контейнер (деплой)
+
+Корневой `Dockerfile` собирает фронтенд и API в один образ: Express отдаёт статику и SPA-маршруты, поэтому приложение стартует само и слушает порт из переменной `PORT`. Порт берётся из `.env` (или из окружения деплоя), а если переменной нет — используется 3000. Эту же стадию (`runtime`) собирает `docker build .` в автоматической проверке.
+
+```bash
+make up-app      # сборка + запуск одного контейнера (PORT из .env)
+make health-app  # /api/health и /
+make down-app    # остановка
+```
+
+Или вручную:
+
+```bash
+docker build -t booking-app .
+docker run --rm --env-file .env -p 3000:3000 booking-app
+```
+
+`--env-file` передаёт переменные из `.env` в окружение контейнера. Второй вариант — смонтировать файл, `dotenv` прочитает его из `/app/.env`:
+
+```bash
+docker run --rm -v "$PWD/.env:/app/.env:ro" -p 3000:3000 booking-app
+```
+
+Если меняете `PORT` в `.env`, не забудьте про публикацию того же порта в `-p` (в `make up-app` порт подставляется автоматически). Сам `.env` в образ не попадает (исключён в `.dockerignore`).
+
+- Фронтенд: http://localhost:3000/
+- API: http://localhost:3000/api/health → `{"status":"ok"}`
 
 ## Использование
 
