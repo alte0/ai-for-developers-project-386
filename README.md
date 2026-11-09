@@ -59,6 +59,23 @@ docker run --rm -v "$PWD/.env:/app/.env:ro" -p 3000:3000 booking-app
 - Фронтенд: http://localhost:3000/
 - API: http://localhost:3000/api/health → `{"status":"ok"}`
 
+### Render
+
+Приложение опубликовано на Render как Docker web service:
+
+- URL: https://booking-calendar-386.onrender.com
+- Dashboard: https://dashboard.render.com/web/srv-dbol5rhsrm7s73caugrg
+- Ветка `main`, автодеплой на каждый push, план Free, регион Frankfurt.
+
+Render сам задаёт переменную `PORT` (в текущем деплое — 10000) и маршрутизирует трафик на неё. Приложение читает `process.env.PORT` и слушает все интерфейсы, поэтому `PORT` в настройках сервиса вручную не фиксируется.
+
+```bash
+curl https://booking-calendar-386.onrender.com/api/health
+# {"status":"ok"}
+```
+
+Особенности Free-плана: сервис засыпает при простое (первый запрос после паузы может занять до минуты), а файловая система эфемерна — SQLite-база сбрасывается при редеплое/перезапуске. Для сохранения данных нужен платный план с persistent disk или внешняя БД.
+
 ## Использование
 
 <!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
